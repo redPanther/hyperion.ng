@@ -22,13 +22,16 @@ ProviderSpi::ProviderSpi()
 	, _fid(-1)
 	, _spiMode(SPI_MODE_0)
 	, _spiDataInvert(false)
+	, _ft232hEnabled(false)
 {
 	memset(&_spi, 0, sizeof(_spi));
 }
 
 ProviderSpi::~ProviderSpi()
 {
-//	close(_fid);
+#ifdef ENABLE_FT232H
+	Close(_mpsse);
+#endif
 }
 
 bool ProviderSpi::init(const QJsonObject &deviceConfig)
@@ -41,6 +44,11 @@ bool ProviderSpi::init(const QJsonObject &deviceConfig)
 	_spiMode       = deviceConfig["spimode"].toInt(_spiMode);
 	_spiDataInvert = deviceConfig["invert"].toBool(_spiDataInvert);
 	
+	#ifdef ENABLE_FT232H
+	_ft232hEnabled = deviceConfig["fth232_enabled"].toBool(false);
+	_endianess = MSB;
+	#endif
+
 	return true;
 }
 
@@ -48,30 +56,51 @@ int ProviderSpi::open()
 {
 	Debug(_log, "_baudRate_Hz %d,  _latchTime_ns %d", _baudRate_Hz, _latchTime_ns);
 	Debug(_log, "_spiDataInvert %d,  _spiMode %d", _spiDataInvert, _spiMode);
-
-	const int bitsPerWord = 8;
-
-	_fid = ::open(_deviceName.c_str(), O_RDWR);
-
-	if (_fid < 0)
+	if (_ft232hEnabled)
 	{
-		Error( _log, "Failed to open device (%s). Error message: %s", _deviceName.c_str(),  strerror(errno) );
-		return -1;
+	#if ENABLE_FT232H
+		enum modes spiMode;
+		switch(_spiMode)
+		{
+			case 1: spiMode = SPI1; break;
+			case 2: spiMode = SPI2; break;
+			case 3: spiMode = SPI3; break;
+			case 0: 
+			default: spiMode = SPI0;
+		}
+		if((_mpsse = MPSSE(spiMode, _baudRate_Hz, _endianess)) == NULL && !_mpsse->open)
+		{
+			Error( _log, "Failed to initialize FT232H MPSSE device. Error message: %s",ErrorString(_mpsse) );
+			return -1;
+		}
+	#endif
 	}
-
-	if (ioctl(_fid, SPI_IOC_WR_MODE, &_spiMode) == -1 || ioctl(_fid, SPI_IOC_RD_MODE, &_spiMode) == -1)
+	else
 	{
-		return -2;
-	}
+		const int bitsPerWord = 8;
 
-	if (ioctl(_fid, SPI_IOC_WR_BITS_PER_WORD, &bitsPerWord) == -1 || ioctl(_fid, SPI_IOC_RD_BITS_PER_WORD, &bitsPerWord) == -1)
-	{
-		return -4;
-	}
+		_fid = ::open(_deviceName.c_str(), O_RDWR);
 
-	if (ioctl(_fid, SPI_IOC_WR_MAX_SPEED_HZ, &_baudRate_Hz) == -1 || ioctl(_fid, SPI_IOC_RD_MAX_SPEED_HZ, &_baudRate_Hz) == -1)
-	{
-		return -6;
+		if (_fid < 0)
+		{
+			Error( _log, "Failed to open device (%s). Error message: %s", _deviceName.c_str(),  strerror(errno) );
+			return -1;
+		}
+
+		if (ioctl(_fid, SPI_IOC_WR_MODE, &_spiMode) == -1 || ioctl(_fid, SPI_IOC_RD_MODE, &_spiMode) == -1)
+		{
+			return -2;
+		}
+
+		if (ioctl(_fid, SPI_IOC_WR_BITS_PER_WORD, &bitsPerWord) == -1 || ioctl(_fid, SPI_IOC_RD_BITS_PER_WORD, &bitsPerWord) == -1)
+		{
+			return -4;
+		}
+
+		if (ioctl(_fid, SPI_IOC_WR_MAX_SPEED_HZ, &_baudRate_Hz) == -1 || ioctl(_fid, SPI_IOC_RD_MAX_SPEED_HZ, &_baudRate_Hz) == -1)
+		{
+			return -6;
+		}
 	}
 
 	return 0;
@@ -79,36 +108,53 @@ int ProviderSpi::open()
 
 int ProviderSpi::writeBytes(const unsigned size, const uint8_t * data)
 {
-	if (_fid < 0)
+	if (_ft232hEnabled)
 	{
-		return -1;
-	}
+	#ifdef ENABLE_FT232H
+		Start(_mpsse); 
 
-	_spi.tx_buf = __u64(data);
-	_spi.len    = __u32(size);
-
-	if (_spiDataInvert)
-	{
-		uint8_t * newdata = (uint8_t *)malloc(size);
-		for (unsigned i = 0; i<size; i++) {
-			newdata[i] = data[i] ^ 0xff;
+		if(Write(_mpsse, (char*)data, size) == MPSSE_FAIL)
+		{
+			Error(_log,"Failed to write to FT232H MPSSE device.");
+			return -1;
 		}
-		_spi.tx_buf = __u64(newdata);
+		Stop(_mpsse);
+	#endif
 	}
-
-	int retVal = ioctl(_fid, SPI_IOC_MESSAGE(1), &_spi);
-	ErrorIf((retVal < 0), _log, "SPI failed to write. errno: %d, %s", errno,  strerror(errno) );
-
-	if (retVal == 0 && _latchTime_ns > 0)
+	else
 	{
-		// The 'latch' time for latching the shifted-value into the leds
-		timespec latchTime;
-		latchTime.tv_sec  = 0;
-		latchTime.tv_nsec = _latchTime_ns;
+	
+		if (_fid < 0)
+		{
+			return -1;
+		}
 
-		// Sleep to latch the leds (only if write succesfull)
-		nanosleep(&latchTime, NULL);
+		_spi.tx_buf = __u64(data);
+		_spi.len    = __u32(size);
+
+		if (_spiDataInvert)
+		{
+			uint8_t * newdata = (uint8_t *)malloc(size);
+			for (unsigned i = 0; i<size; i++) {
+				newdata[i] = data[i] ^ 0xff;
+			}
+			_spi.tx_buf = __u64(newdata);
+		}
+
+		int retVal = ioctl(_fid, SPI_IOC_MESSAGE(1), &_spi);
+		ErrorIf((retVal < 0), _log, "SPI failed to write. errno: %d, %s", errno,  strerror(errno) );
+
+		if (retVal == 0 && _latchTime_ns > 0)
+		{
+			// The 'latch' time for latching the shifted-value into the leds
+			timespec latchTime;
+			latchTime.tv_sec  = 0;
+			latchTime.tv_nsec = _latchTime_ns;
+
+			// Sleep to latch the leds (only if write succesfull)
+			nanosleep(&latchTime, NULL);
+		}
+
+		return retVal;
 	}
-
-	return retVal;
 }

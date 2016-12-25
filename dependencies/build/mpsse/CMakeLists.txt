@@ -1,0 +1,12 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+PROJECT(mpsse)
+
+SET ( SRC
+	fast.c
+	mpsse.c
+	support.c
+)
+
+INCLUDE_DIRECTORIES( ../../include/mpsse )
+ADD_LIBRARY( ${PROJECT_NAME} ${SRC} )
+TARGET_LINK_LIBRARIES( ${PROJECT_NAME} ftdi )

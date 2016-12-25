@@ -30,6 +30,9 @@
 // Define to enable profiler for development purpose
 #cmakedefine ENABLE_PROFILER
 
+// Define to enable the spi-device via ft232h
+#cmakedefine ENABLE_FT232H
+
 // the hyperion build id string
 #define HYPERION_BUILD_ID "${HYPERION_BUILD_ID}"
 

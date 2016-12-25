@@ -6,6 +6,12 @@
 // Hyperion includes
 #include <leddevice/LedDevice.h>
 
+#ifdef ENABLE_FT232H
+extern "C" {
+	#include <mpsse/mpsse.h>
+}
+#endif
+
 ///
 /// The ProviderSpi implements an abstract base-class for LedDevices using the SPI-device.
 ///
@@ -65,6 +71,15 @@ protected:
 
 	/// 1=>invert the data pattern
 	bool _spiDataInvert;
+
+	bool _ft232hEnabled;
+#ifdef ENABLE_FT232H
+	/// The endianess MSB or LSB
+	int _endianess;
+
+	/// The File Identifier of the opened output device (or -1 if not opened)
+	struct mpsse_context *_mpsse;	
+#endif
 
 	/// The transfer structure for writing to the spi-device
 	spi_ioc_transfer _spi;

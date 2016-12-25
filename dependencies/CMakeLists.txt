@@ -1,5 +1,8 @@
 add_subdirectory(build/hidapi)
 add_subdirectory(build/tinkerforge)
+IF ( ${CMAKE_SYSTEM} MATCHES "Linux" AND ENABLE_FT232H)
+	add_subdirectory(build/mpsse)
+ENDIF()
 
 if(ENABLE_WS281XPWM)
 	add_library(ws281x

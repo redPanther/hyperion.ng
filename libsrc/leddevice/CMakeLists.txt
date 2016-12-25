@@ -156,6 +156,10 @@ if(ENABLE_WS281XPWM)
 	target_link_libraries(leddevice ws281x)
 endif()
 
+if(ENABLE_FT232H)
+	target_link_libraries(leddevice mpsse)
+endif()
+
 if(APPLE)
 	target_link_libraries(leddevice hidapi-mac)
 else()
