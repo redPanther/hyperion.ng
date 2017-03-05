@@ -26,3 +26,4 @@ if(ENABLE_OSX)
 	add_subdirectory(hyperion-osx)
 endif()
 
+	add_subdirectory(hyperion-qt)
