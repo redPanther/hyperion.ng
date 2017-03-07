@@ -1,0 +1,9 @@
+{
+    "type":"object",
+    "script" : "lightworks.py",
+    "title":"edt_eff_fade_header_title",
+    "required":true,
+    "properties":{
+   },
+    "additionalProperties": true
+}
