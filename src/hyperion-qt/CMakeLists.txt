@@ -13,6 +13,7 @@ include_directories(
 
 set(Hyperion_X11_QT_HEADERS
 	qt_grabber.h
+	JsonConnection.h
 )
 
 set(Hyperion_X11_HEADERS
@@ -21,6 +22,7 @@ set(Hyperion_X11_HEADERS
 set(Hyperion_X11_SOURCES
 	qt_grabber.cpp
 	hyperion-qt.cpp
+	JsonConnection.cpp
 )
 
 QT5_WRAP_CPP(Hyperion_X11_HEADERS_MOC ${Hyperion_X11_QT_HEADERS})

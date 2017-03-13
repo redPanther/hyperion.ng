@@ -2,6 +2,7 @@
 
 // QT includes
 #include <QCoreApplication>
+#include <QApplication>
 #include <QImage>
 
 #include <protoserver/ProtoConnectionWrapper.h>
@@ -22,13 +23,12 @@ void saveScreenshot(QString filename, const Image<ColorRgb> & image)
 
 int main(int argc, char ** argv)
 {
-	//QCoreApplication app(argc, argv);
-	QGuiApplication app(argc, argv);
+	QApplication app(argc, argv);
 
 	try
 	{
 		// create the option parser and initialize all parameters
-		Parser parser("OSX capture application for Hyperion");
+		Parser parser("QT desktop capture application for Hyperion");
 
 		Option        & argDisplay    = parser.add<Option>       ('d', "display",    "Set the display to capture [default: %1]");
 		IntOption     & argFps        = parser.add<IntOption>    ('f', "framerate",  "Capture frame rate [default: %1]", "10", 1, 600);
