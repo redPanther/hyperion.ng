@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.8)
 project(hyperion-qt)
 
 find_package(Qt5Widgets REQUIRED)
-find_package(X11 REQUIRED)
 
 include_directories(
 	${CMAKE_CURRENT_BINARY_DIR}/../../libsrc/protoserver
