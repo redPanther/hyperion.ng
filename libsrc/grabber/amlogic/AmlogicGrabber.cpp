@@ -79,8 +79,10 @@ bool AmlogicGrabber::isVideoPlaying()
 
 int AmlogicGrabber::grabFrame(Image<ColorRgb> & image)
 {
-	// TODO crop resulting image accroding member _videoMode
-	// TODO add croping
+	if (!_enabled)
+	{
+		return 0;
+	}
 
 	// Make sure video is playing, else there is nothing to grab
 	if (!isVideoPlaying())

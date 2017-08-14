@@ -40,7 +40,6 @@ public:
 
 	static QStringList availableGrabbers();
 
-
 public:
 	template <typename Grabber_T>
 	void transferFrame(Grabber_T &grabber)
@@ -70,6 +69,8 @@ public slots:
 	///
 	virtual void action() = 0;
 
+	void actionWrapper();
+	
 	///
 	/// Set the grabbing mode
 	/// @param[in] mode The new grabbing mode

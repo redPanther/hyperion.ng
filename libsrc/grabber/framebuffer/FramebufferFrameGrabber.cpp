@@ -49,6 +49,11 @@ FramebufferFrameGrabber::~FramebufferFrameGrabber()
 
 int FramebufferFrameGrabber::grabFrame(Image<ColorRgb> & image)
 {
+	if (!_enabled)
+	{
+		return 0;
+	}
+
 	struct fb_var_screeninfo vinfo;
 	unsigned capSize, bytesPerPixel;
 	PixelFormat pixelFormat;

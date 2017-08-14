@@ -2,12 +2,11 @@
 
 // STL includes
 #include <vector>
-#include <map>
 #include <cstdint>
-#include <limits>
 
 // QT includes
 #include <QMap>
+#include <QVector>
 #include <QObject>
 #include <QTimer>
 
@@ -47,10 +46,12 @@ public:
 		QString origin;
 		/// id fo smoothing config
 		unsigned smooth_cfg;
+		
+		QVector<int> usedByPriority;
 	};
 
 	/// The lowest possible priority, which is used when no priority channels are active
-	const static int LOWEST_PRIORITY = std::numeric_limits<uint8_t>::max();
+	const static int LOWEST_PRIORITY;
 
 	///
 	/// Constructs the PriorityMuxer for the given number of leds (used to switch to black when
@@ -141,6 +142,8 @@ private slots:
 	void emitReq();
 
 private:
+	void updateUsedBy();
+
 	/// The current priority (lowest value in _activeInputs)
 	int _currentPriority;
 

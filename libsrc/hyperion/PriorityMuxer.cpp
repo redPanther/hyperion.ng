@@ -1,10 +1,13 @@
 // STL includes
 #include <algorithm>
 #include <stdexcept>
+#include <limits>
 
 // Hyperion includes
 #include <hyperion/PriorityMuxer.h>
 
+const int PriorityMuxer::LOWEST_PRIORITY = std::numeric_limits<uint8_t>::max();
+ 
 PriorityMuxer::PriorityMuxer(int ledCount)
 	: _currentPriority(LOWEST_PRIORITY)
 	, _activeInputs()
@@ -15,7 +18,7 @@ PriorityMuxer::PriorityMuxer(int ledCount)
 	_lowestPriorityInfo.ledColors      = std::vector<ColorRgb>(ledCount, {0, 0, 0});
 	_lowestPriorityInfo.componentId    = hyperion::COMP_COLOR;
 	_lowestPriorityInfo.origin         = "System";
-
+	
 	_activeInputs[_currentPriority] = _lowestPriorityInfo;
 
 	// do a reuqest after blocking timer runs out
@@ -41,6 +44,11 @@ QList<int> PriorityMuxer::getPriorities() const
 bool PriorityMuxer::hasPriority(const int priority) const
 {
 	return (priority == LOWEST_PRIORITY) ? true : _activeInputs.contains(priority);
+}
+
+void PriorityMuxer::setUsedBy(int prio1, int prio2)
+{
+	/// add here
 }
 
 const PriorityMuxer::InputInfo& PriorityMuxer::getInputInfo(const int priority) const
@@ -95,6 +103,8 @@ void PriorityMuxer::clearAll(bool forceClearAll)
 				_activeInputs.remove(key);
 			}
 		}
+		_activeInputs[LOWEST_PRIORITY].usedByPriority.clear();
+		updateUsedBy();
 	}
 }
 
@@ -118,6 +128,23 @@ void PriorityMuxer::setCurrentTime(const int64_t& now)
 				emitReq();
 			}
 			++infoIt;
+		}
+	}
+	updateUsedBy();
+}
+
+void PriorityMuxer::updateUsedBy()
+{
+	for (auto key : _activeInputs.keys())
+	{
+		QVector<int> tmp(_activeInputs[key].usedByPriority);
+		_activeInputs[key].usedByPriority.clear();
+		for (auto priority : tmp)
+		{
+			if (_activeInputs.contains(priority))
+			{
+				_activeInputs[key].usedByPriority.append(priority);
+			}
 		}
 	}
 }

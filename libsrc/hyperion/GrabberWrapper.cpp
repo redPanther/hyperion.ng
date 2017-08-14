@@ -37,7 +37,7 @@ GrabberWrapper::GrabberWrapper(QString grabberName, Grabber * ggrabber, unsigned
 	connect(_hyperion, SIGNAL(grabbingMode(GrabbingMode)), this, SLOT(setGrabbingMode(GrabbingMode)));
 	connect(_hyperion, SIGNAL(videoMode(VideoMode)), this, SLOT(setVideoMode(VideoMode)));
 	connect(this, SIGNAL(emitImage(int, const Image<ColorRgb>&, const int)), _hyperion, SLOT(setImage(int, const Image<ColorRgb>&, const int)) );
-	connect(&_timer, SIGNAL(timeout()), this, SLOT(action()));
+	connect(&_timer, SIGNAL(timeout()), this, SLOT(actionWrapper()));
 
 }
 
@@ -62,6 +62,13 @@ void GrabberWrapper::stop()
 	// Stop the timer, effectivly stopping the process
 	_timer.stop();
 	_hyperion->unRegisterPriority(_grabberName);
+}
+
+void GrabberWrapper::actionWrapper()
+{
+	bool enable = _hyperion->isCurrentPriority(_priority) || ! _hyperion->getPriorityInfo(_priority).usedByPriority.isEmpty();
+	_ggrabber->setEnabled(enable);
+	action();
 }
 
 void GrabberWrapper::componentStateChanged(const hyperion::Components component, bool enable)

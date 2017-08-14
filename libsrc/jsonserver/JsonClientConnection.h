@@ -1,5 +1,5 @@
 #pragma once
-
+//https://github.com/zaphoyd/websocketpp/blob/master/websocketpp/frame.hpp
 #include <map>
 
 // Qt includes

@@ -71,15 +71,15 @@ void JsonClientConnection::readData()
 
 void JsonClientConnection::handleWebSocketFrame()
 {
-	if ((_receiveBuffer.at(0) & BHB0_FIN) == BHB0_FIN)
+	if ((_receiveBuffer.at(0) & BHB1_MASK) == BHB0_FIN)
 	{
 		// final bit found, frame complete
 		quint8 * maskKey = NULL;
 		quint8 opCode = _receiveBuffer.at(0) & BHB0_OPCODE;
-		bool isMasked = (_receiveBuffer.at(1) & BHB0_FIN) == BHB0_FIN;
+		bool isMasked = (_receiveBuffer.at(1) & BHB1_MASK) == BHB0_FIN;
 		quint64 payloadLength = _receiveBuffer.at(1) & BHB1_PAYLOAD;
 		quint32 index = 2;
-//printf("%ld\n", payloadLength);
+
 		switch (payloadLength)
 		{
 			case payload_size_code_16bit:
