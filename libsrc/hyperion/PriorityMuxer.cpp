@@ -46,17 +46,16 @@ bool PriorityMuxer::hasPriority(const int priority) const
 	return (priority == LOWEST_PRIORITY) ? true : _activeInputs.contains(priority);
 }
 
-void PriorityMuxer::setUsedBy(int prio1, int prio2)
-{
-	/// add here
-}
-
 const PriorityMuxer::InputInfo& PriorityMuxer::getInputInfo(const int priority) const
 {
 	auto elemIt = _activeInputs.find(priority);
 	if (elemIt == _activeInputs.end())
 	{
-		throw std::runtime_error("HYPERION (prioritymuxer) ERROR: no such priority");
+		elemIt = _activeInputs.find(LOWEST_PRIORITY);
+		if (elemIt == _activeInputs.end())
+		{
+			throw std::runtime_error("HYPERION (prioritymuxer) ERROR: no such priority");
+		}
 	}
 	return elemIt.value();
 }
@@ -103,8 +102,6 @@ void PriorityMuxer::clearAll(bool forceClearAll)
 				_activeInputs.remove(key);
 			}
 		}
-		_activeInputs[LOWEST_PRIORITY].usedByPriority.clear();
-		updateUsedBy();
 	}
 }
 
@@ -128,23 +125,6 @@ void PriorityMuxer::setCurrentTime(const int64_t& now)
 				emitReq();
 			}
 			++infoIt;
-		}
-	}
-	updateUsedBy();
-}
-
-void PriorityMuxer::updateUsedBy()
-{
-	for (auto key : _activeInputs.keys())
-	{
-		QVector<int> tmp(_activeInputs[key].usedByPriority);
-		_activeInputs[key].usedByPriority.clear();
-		for (auto priority : tmp)
-		{
-			if (_activeInputs.contains(priority))
-			{
-				_activeInputs[key].usedByPriority.append(priority);
-			}
 		}
 	}
 }

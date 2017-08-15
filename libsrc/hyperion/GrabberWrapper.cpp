@@ -66,8 +66,7 @@ void GrabberWrapper::stop()
 
 void GrabberWrapper::actionWrapper()
 {
-	bool enable = _hyperion->isCurrentPriority(_priority) || ! _hyperion->getPriorityInfo(_priority).usedByPriority.isEmpty();
-	_ggrabber->setEnabled(enable);
+	_ggrabber->setEnabled(_hyperion->isCurrentPriority(_priority));
 	action();
 }
 
@@ -107,20 +106,13 @@ void GrabberWrapper::componentStateChanged(const hyperion::Components component,
 
 void GrabberWrapper::setGrabbingMode(const GrabbingMode mode)
 {
-	switch (mode)
+	if (mode == GRABBINGMODE_OFF)
 	{
-	case GRABBINGMODE_VIDEO:
-	case GRABBINGMODE_PAUSE:
-	case GRABBINGMODE_AUDIO:
-	case GRABBINGMODE_PHOTO:
-	case GRABBINGMODE_MENU:
-	case GRABBINGMODE_SCREENSAVER:
-	case GRABBINGMODE_INVALID:
-		start();
-		break;
-	case GRABBINGMODE_OFF:
 		stop();
-		break;
+	}
+	else
+	{
+		start();
 	}
 }
 

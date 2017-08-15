@@ -5,6 +5,7 @@
 
 // STL includes
 #include <map>
+#include <QMap>
 
 #include <QObject>
 
@@ -16,13 +17,13 @@ public:
 	ComponentRegister();
 	~ComponentRegister();
 
-	std::map<hyperion::Components, bool> getRegister() { return _componentStates; };
+	QMap<hyperion::Components, bool> getRegister() { return _componentStates; };
 
 public slots:
 	void componentStateChanged(const hyperion::Components comp, const bool activated);
 
 private:
-	std::map<hyperion::Components, bool> _componentStates;
+	QMap<hyperion::Components, bool> _componentStates;
 	Logger * _log;
 };
 

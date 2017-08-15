@@ -46,8 +46,6 @@ public:
 		QString origin;
 		/// id fo smoothing config
 		unsigned smooth_cfg;
-		
-		QVector<int> usedByPriority;
 	};
 
 	/// The lowest possible priority, which is used when no priority channels are active
@@ -142,8 +140,6 @@ private slots:
 	void emitReq();
 
 private:
-	void updateUsedBy();
-
 	/// The current priority (lowest value in _activeInputs)
 	int _currentPriority;
 
